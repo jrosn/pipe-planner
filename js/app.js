@@ -29,14 +29,6 @@ pipePlannerApp.factory('teams', function () {
 });
 
 pipePlannerApp.factory('experts', function () {
-    var _data = {
-        "1" : {
-            id: "1",
-            name: "testName",
-            comment: "324"
-        }
-    };
-
     var addExpert = function (name, comment) {
         var newID = Math.random().toString(36).replace(/[^a-z1-9]+/g, '').substr(0, 16);
         _data[newID] = {
