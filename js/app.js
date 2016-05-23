@@ -1,39 +1,77 @@
 var pipePlannerApp = angular.module("pipePlannerApp", ["ngDraggable"]);
 
 pipePlannerApp.factory('teams', function () {
-    return {};
+    var _data = {};
+
+    var addTeam = function (name, comment) {
+        var newID = Math.random().toString(36).replace(/[^a-z1-9]+/g, '').substr(0, 16);
+        _data[newID] = {
+            id: newID,
+            name: name,
+            comment: comment
+        };
+        return newID;
+    };
+
+    var getTeam = function (id) {
+        return _data[id];
+    };
+
+    var getTeams = function () {
+        return _data;
+    };
+
+    return {
+        addTeam: addTeam,
+        getTeam: getTeam,
+        getTeams: getTeams
+    };
 });
 
 pipePlannerApp.factory('experts', function () {
-    return {};
+    var _data = {
+        "1" : {
+            id: "1",
+            name: "testName",
+            comment: "324"
+        }
+    };
+
+    var addExpert = function (name, comment) {
+        var newID = Math.random().toString(36).replace(/[^a-z1-9]+/g, '').substr(0, 16);
+        _data[newID] = {
+            id: newID,
+            name: name,
+            comment: comment
+        };
+        return newID;
+    };
+
+    var getExpert = function (id) {
+        return _data[id];
+    };
+
+    var getExperts = function () {
+        return _data;
+    };
+
+    return {
+        getExpert: getExpert,
+        addExpert: addExpert,
+        getExperts: getExperts
+    };
 });
 
 pipePlannerApp.controller("TeamListCtrl", function ($scope, teams) {
     $scope.title = "Команды";
-    $scope.teams = teams;
-
-    $scope.addTeam = function (newTeamName, newTeamComment) {
-        var newID = Math.random().toString(36).replace(/[^a-z1-9]+/g, '').substr(0, 16);
-        teams[newID] = {
-            id: newID,
-            name: newTeamName,
-            comment: newTeamComment
-        };
-    }
+    $scope.teams = teams.getTeams();
+    $scope.addTeam = teams.addTeam;
 });
 
 pipePlannerApp.controller("ExpertListCtrl", function ($scope, experts) {
     $scope.title = "Эксперты";
-    $scope.experts = experts;
-
-    $scope.addExpert = function (newExpertName, newExpertComment) {
-        var newID = Math.random().toString(36).replace(/[^a-z1-9]+/g, '').substr(0, 16);
-        experts[newID] = {
-            id: newID,
-            name: newExpertName,
-            comment: newExpertComment
-        };
-    }
+    $scope.experts = experts.getExperts();
+    $scope.addExpert = experts.addExpert;
 });
 
 pipePlannerApp.controller("TimetableCtrl", function ($scope, experts, teams) {
@@ -42,7 +80,7 @@ pipePlannerApp.controller("TimetableCtrl", function ($scope, experts, teams) {
     $scope.teams = teams;
     $scope.timetable = {};
     $scope.countIterations = 5;
-    
+
     $scope.genZeroTimetable = function () {
         $scope.timetable = {};
 
