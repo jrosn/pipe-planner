@@ -29,13 +29,7 @@ pipePlannerApp.factory('teams', function () {
 });
 
 pipePlannerApp.factory('experts', function () {
-    var _data = {
-        "1" : {
-            id: "1",
-            name: "testName",
-            comment: "324"
-        }
-    };
+    var _data = {};
 
     var addExpert = function (name, comment) {
         var newID = Math.random().toString(36).replace(/[^a-z1-9]+/g, '').substr(0, 16);
@@ -48,6 +42,8 @@ pipePlannerApp.factory('experts', function () {
     };
 
     var getExpert = function (id) {
+        console.log(id);
+        console.log(_data);
         return _data[id];
     };
 
@@ -77,14 +73,14 @@ pipePlannerApp.controller("ExpertListCtrl", function ($scope, experts) {
 pipePlannerApp.controller("TimetableCtrl", function ($scope, experts, teams) {
     $scope.title = "Расписание";
 
-    $scope.teams = teams;
+    $scope.teams = teams.getTeams();
     $scope.timetable = {};
     $scope.countIterations = 5;
 
     $scope.genZeroTimetable = function () {
         $scope.timetable = {};
 
-        for(var i in experts) {
+        for(var i in experts.getExperts()) {
             $scope.timetable[i] = new Array($scope.countIterations);
             for (var j = 0; j < $scope.timetable[i].length; j++) {
                 $scope.timetable[i][j] = {
@@ -96,7 +92,8 @@ pipePlannerApp.controller("TimetableCtrl", function ($scope, experts, teams) {
     };
 
     $scope.getExpertName = function (id) {
-        return experts[id].name;
+        console.log("=====" + id);
+        return experts.getExpert(id)["name"];
     };
 
     $scope.cellClick = function (expertID, iter) {
