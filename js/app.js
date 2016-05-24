@@ -56,6 +56,56 @@ pipePlannerApp.factory('experts', function () {
     };
 });
 
+pipePlannerApp.factory('timetable', function (teams, experts) {
+    var onChangeIterationsCount = function (oldValue, newValue) {
+        console.log("IterationsCount changed");
+    };
+
+    var absenseExperts = {};
+    var setAbsenseExpert = function (expertID, iter) {
+        if(absenseExperts[expertID] == undefined) {
+            absenseExperts[expertID] = [];
+        }
+        absenseExperts[expertID].push(iter);
+    };
+    var delAbsenseExpert = function (expertID, iter) {
+        absenseExperts[expertID] = absenseExperts[expertID].filter(function (x) {
+            return x != iter;
+        });
+    };
+    var isAbsenseExpert = function (expertID, iter) {
+        return absenseExperts[expertID] != undefined && absenseExperts[expertID].indexOf(iter) != -1;
+    };
+
+    var absenseTeams = {};
+    var setAbsenseTeam = function (teamID, iter) {
+        if(absenseTeams[teamID] == undefined) {
+            absenseTeams[teamID] = [];
+        }
+        absenseTeams[teamID].push(iter);
+    };
+    var delAbsenseTeam = function (teamID, iter) {
+        absenseTeams[teamID] = absenseTeams[teamID].filter(function (x) {
+            return x != iter;
+        });
+    };
+    var isAbsenseTeam = function (teamID, iter) {
+        return absenseTeams[teamID] != undefined && absenseTeams[teamID].indexOf(iter) != -1;
+    };
+
+    return {
+        onChangeIterationsCount: onChangeIterationsCount,
+
+        setAbsenseExpert: setAbsenseExpert,
+        delAbsenseExpert: delAbsenseExpert,
+        isAbsenseExpert: isAbsenseExpert,
+
+        setAbsenseTeam: setAbsenseTeam,
+        delAbsenseTeam: delAbsenseTeam,
+        isAbsenseTeam: isAbsenseTeam
+    };
+});
+
 pipePlannerApp.controller("TeamListCtrl", function ($scope, teams) {
     $scope.title = "Команды";
     $scope.teams = teams.getTeams();
@@ -66,4 +116,8 @@ pipePlannerApp.controller("ExpertListCtrl", function ($scope, experts) {
     $scope.title = "Эксперты";
     $scope.experts = experts.getExperts();
     $scope.addExpert = experts.addExpert;
+});
+
+pipePlannerApp.controller("TimetableCtrl", function ($scope, timetable) {
+    
 });
