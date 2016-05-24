@@ -42,8 +42,6 @@ pipePlannerApp.factory('experts', function () {
     };
 
     var getExpert = function (id) {
-        console.log(id);
-        console.log(_data);
         return _data[id];
     };
 
@@ -92,7 +90,6 @@ pipePlannerApp.controller("TimetableCtrl", function ($scope, experts, teams) {
     };
 
     $scope.getExpertName = function (id) {
-        console.log("=====" + id);
         return experts.getExpert(id)["name"];
     };
 
