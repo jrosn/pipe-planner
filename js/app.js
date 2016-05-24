@@ -56,7 +56,7 @@ pipePlannerApp.factory('experts', function () {
     };
 });
 
-pipePlannerApp.factory('absenseTeam', function (teams) {
+pipePlannerApp.factory('absenseTeam', function () {
     var absenseTeams = {};
     var setAbsenseTeam = function (teamID, iter) {
         if(absenseTeams[teamID] == undefined) {
@@ -79,7 +79,7 @@ pipePlannerApp.factory('absenseTeam', function (teams) {
     }
 });
 
-pipePlannerApp.factory('absenseExpert', function (experts) {
+pipePlannerApp.factory('absenseExpert', function () {
     var absenseExperts = {};
     var setAbsenseExpert = function (expertID, iter) {
         if(absenseExperts[expertID] == undefined) {
