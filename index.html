@@ -14,6 +14,20 @@
         <h1>Pipe planner</h1>
     </div>
     <div class="container">
+        <div class="row" ng-controller="AbsenceExpertCtrl">
+            <div class="col-md-12">
+                <h2>{{ title }}</h2>
+                <table class="table table-bordered" ng-init="updateTableModel()">
+                    <tr ng-repeat="(expertID, cells) in absenceExpertTable">
+                        <!-- Имя эксперта -->
+                        <td class="col-sm-2"><strong>{{ getExpertName(expertID) }}</strong></td>
+
+                        <!-- Клеточки для заполнения -->
+                        <td ng-repeat="(iter, cell) in cells track by $index" class="ng-class: cell == 1 ? 'danger' : 'success'" ng-click="onCellClick(expertID, iter)"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-6" ng-controller="ExpertListCtrl">
                 <h2>{{ title }}</h2>
@@ -57,7 +71,7 @@
                     <div class="col-lg-2"></div>
                 </div>
             </div>
-        </div>
+        </div><!-- Список экспертов, команд -->
     </div>
 </body>
 </html>

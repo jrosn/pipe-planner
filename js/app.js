@@ -28,7 +28,7 @@ pipePlannerApp.factory('teams', function () {
     };
 });
 
-pipePlannerApp.factory('experts', function () {
+pipePlannerApp.factory('experts', function ($rootScope) {
     var _data = {};
 
     var addExpert = function (name, comment) {
@@ -38,6 +38,7 @@ pipePlannerApp.factory('experts', function () {
             name: name,
             comment: comment
         };
+        $rootScope.$broadcast("experts-updated");
         return newID;
     };
 
@@ -56,51 +57,64 @@ pipePlannerApp.factory('experts', function () {
     };
 });
 
-pipePlannerApp.factory('absenseTeam', function () {
-    var absenseTeams = {};
-    var setAbsenseTeam = function (teamID, iter) {
-        if(absenseTeams[teamID] == undefined) {
-            absenseTeams[teamID] = [];
+pipePlannerApp.factory('absenceTeam', function () {
+    var absenceTeams = {};
+    var setAbsenceTeam = function (teamID, iter) {
+        if(absenceTeams[teamID] == undefined) {
+            absenceTeams[teamID] = [];
         }
-        absenseTeams[teamID].push(iter);
+        absenceTeams[teamID].push(iter);
     };
-    var delAbsenseTeam = function (teamID, iter) {
-        absenseTeams[teamID] = absenseTeams[teamID].filter(function (x) {
+    var delAbsenceTeam = function (teamID, iter) {
+        absenceTeams[teamID] = absenceTeams[teamID].filter(function (x) {
             return x != iter;
         });
     };
-    var isAbsenseTeam = function (teamID, iter) {
-        return absenseTeams[teamID] != undefined && absenseTeams[teamID].indexOf(iter) != -1;
+    var isAbsenceTeam = function (teamID, iter) {
+        return absenceTeams[teamID] != undefined && absenceTeams[teamID].indexOf(iter) != -1;
     };
     return {
-        setAbsenseTeam: setAbsenseTeam,
-        delAbsenseTeam: delAbsenseTeam,
-        isAbsenseTeam: isAbsenseTeam
+        setAbsenceTeam: setAbsenceTeam,
+        delAbsenceTeam: delAbsenceTeam,
+        isAbsenceTeam: isAbsenceTeam
     }
 });
 
-pipePlannerApp.factory('absenseExpert', function () {
-    var absenseExperts = {};
-    var setAbsenseExpert = function (expertID, iter) {
-        if(absenseExperts[expertID] == undefined) {
-            absenseExperts[expertID] = [];
+pipePlannerApp.factory('absenceExpert', function () {
+    var absenceExperts = {};
+    var setAbsenceExpert = function (expertID, iter) {
+        if(absenceExperts[expertID] == undefined) {
+            absenceExperts[expertID] = [];
         }
-        absenseExperts[expertID].push(iter);
+        absenceExperts[expertID].push(iter);
     };
-    var delAbsenseExpert = function (expertID, iter) {
-        absenseExperts[expertID] = absenseExperts[expertID].filter(function (x) {
+    var delAbsenceExpert = function (expertID, iter) {
+        absenceExperts[expertID] = absenceExperts[expertID].filter(function (x) {
             return x != iter;
         });
     };
-    var isAbsenseExpert = function (expertID, iter) {
-        return absenseExperts[expertID] != undefined && absenseExperts[expertID].indexOf(iter) != -1;
+    var isAbsenceExpert = function (expertID, iter) {
+        return absenceExperts[expertID] != undefined && absenceExperts[expertID].indexOf(iter) != -1;
     };
 
     return {
-        setAbsenseExpert: setAbsenseExpert,
-        delAbsenseExpert: delAbsenseExpert,
-        isAbsenseExpert: isAbsenseExpert
+        setAbsenceExpert: setAbsenceExpert,
+        delAbsenceExpert: delAbsenceExpert,
+        isAbsenceExpert: isAbsenceExpert
     };
+});
+
+pipePlannerApp.factory('timetable', function () {
+    var options = {
+        iterCount: 6
+    };
+    var getOptions = function () {
+        return options;
+    };
+
+    return {
+        getOptions: getOptions
+    }
 });
 
 pipePlannerApp.controller("TeamListCtrl", function ($scope, teams) {
@@ -113,4 +127,38 @@ pipePlannerApp.controller("ExpertListCtrl", function ($scope, experts) {
     $scope.title = "Эксперты";
     $scope.experts = experts.getExperts();
     $scope.addExpert = experts.addExpert;
+});
+
+pipePlannerApp.controller("AbsenceExpertCtrl", function ($rootScope, $scope, experts, absenceExpert, timetable) {
+    $scope.title = "Отсутствие экспертов";
+    $scope.absenceExpertTable = {};
+    $scope.iterCount = timetable.getOptions().iterCount;
+
+    $scope.getExpertName = function (expertID) {
+        return experts.getExpert(expertID).name;
+    };
+
+    $scope.updateTableFromModel = function () {
+        for(var expertID in experts.getExperts()) {
+            if($scope.absenceExpertTable[expertID] == undefined ||
+               $scope.absenceExpertTable[expertID].length != timetable.getOptions().iterCount) {
+                $scope.absenceExpertTable[expertID] = new Array(timetable.getOptions().iterCount);
+            }
+
+            for(var i = 0; i < timetable.getOptions().iterCount; i++) {
+                $scope.absenceExpertTable[expertID][i] = (absenceExpert.isAbsenceExpert(expertID, i) ? 1 : 0);
+            }
+        }
+    };
+
+    $scope.onCellClick = function (expertID, iter) {
+        if($scope.absenceExpertTable[expertID][iter] == 0) {
+            absenceExpert.setAbsenceExpert(expertID, iter);
+        } else {
+            absenceExpert.delAbsenceExpert(expertID, iter);
+        }
+        $scope.updateTableFromModel();
+    };
+
+    $rootScope.$on("experts-updated", $scope.updateTableFromModel);
 });
