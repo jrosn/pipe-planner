@@ -1,6 +1,6 @@
 var pipePlannerApp = angular.module("pipePlannerApp", ["ngDraggable"]);
 
-pipePlannerApp.factory('teams', function () {
+pipePlannerApp.factory('teams', function ($rootScope) {
     var _data = {};
 
     var addTeam = function (name, comment) {
@@ -10,6 +10,7 @@ pipePlannerApp.factory('teams', function () {
             name: name,
             comment: comment
         };
+        $rootScope.$broadcast("teams-updated");
         return newID;
     };
 
@@ -161,4 +162,38 @@ pipePlannerApp.controller("AbsenceExpertCtrl", function ($rootScope, $scope, exp
     };
 
     $rootScope.$on("experts-updated", $scope.updateTableFromModel);
+});
+
+pipePlannerApp.controller("AbsenceTeamCtrl", function ($rootScope, $scope, teams, absenceTeam, timetable) {
+    $scope.title = "Отсутствие команд";
+    $scope.absenceTeamTable = {};
+    $scope.iterCount = timetable.getOptions().iterCount;
+
+    $scope.getTeamName = function (teamID) {
+        return teams.getTeam(teamID).name;
+    };
+
+    $scope.updateTableFromModel = function () {
+        for(var teamID in teams.getTeams()) {
+            if($scope.absenceTeamTable[teamID] == undefined ||
+                $scope.absenceTeamTable[teamID].length != timetable.getOptions().iterCount) {
+                $scope.absenceTeamTable[teamID] = new Array(timetable.getOptions().iterCount);
+            }
+
+            for(var i = 0; i < timetable.getOptions().iterCount; i++) {
+                $scope.absenceTeamTable[teamID][i] = (absenceTeam.isAbsenceTeam(teamID, i) ? 1 : 0);
+            }
+        }
+    };
+
+    $scope.onCellClick = function (teamID, iter) {
+        if($scope.absenceTeamTable[teamID][iter] == 0) {
+            absenceTeam.setAbsenceTeam(teamID, iter);
+        } else {
+            absenceTeam.delAbsenceTeam(teamID, iter);
+        }
+        $scope.updateTableFromModel();
+    };
+
+    $rootScope.$on("teams-updated", $scope.updateTableFromModel);
 });

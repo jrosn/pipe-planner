@@ -14,6 +14,20 @@
         <h1>Pipe planner</h1>
     </div>
     <div class="container">
+        <div class="row" ng-controller="AbsenceTeamCtrl">
+            <div class="col-md-12">
+                <h2>{{ title }}</h2>
+                <table class="table table-bordered" ng-init="updateTableModel()">
+                    <tr ng-repeat="(teamID, cells) in absenceTeamTable">
+                        <!-- Имя команды -->
+                        <td class="col-sm-2"><strong>{{ getTeamName(teamID) }}</strong></td>
+
+                        <!-- Клеточки для заполнения -->
+                        <td ng-repeat="(iter, cell) in cells track by $index" class="ng-class: cell == 1 ? 'danger' : 'success'" ng-click="onCellClick(teamID, iter)"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
         <div class="row" ng-controller="AbsenceExpertCtrl">
             <div class="col-md-12">
                 <h2>{{ title }}</h2>
@@ -28,6 +42,7 @@
                 </table>
             </div>
         </div>
+
         <div class="row">
             <div class="col-md-6" ng-controller="ExpertListCtrl">
                 <h2>{{ title }}</h2>
