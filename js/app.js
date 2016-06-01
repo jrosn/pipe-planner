@@ -105,17 +105,53 @@ pipePlannerApp.factory('absenceExpert', function () {
     };
 });
 
-pipePlannerApp.factory('timetable', function () {
-    var options = {
-        iterCount: 6
+pipePlannerApp.factory('timetable', function (experts) {
+    var iterCount = 10;
+    var getIterCount = function () {
+        return iterCount;
     };
-    var getOptions = function () {
-        return options;
+    var setIterCount = function (newVal) {
+        iterCount = newVal;
     };
 
+    var timetable = {};
+    var addTeamToCell = function (expertID, iter, teamID) {
+        if(timetable[expertID] == undefined) {
+            timetable[expertID] = new Array(iterCount);
+        }
+
+        timetable[expertID][iter] = teamID;
+    };
+    var getTeamFromCell = function (expertID, iter) {
+        if(timetable[expertID] == undefined) {
+            return undefined;
+        }
+
+        return timetable[expertID][iter];
+    };
+    var clear = function () {
+        timetable = {}
+    };
+
+    var isDublicatedInIter = function (iter, teamID) {
+        for(var expertID in experts.getExperts()) {
+            if(getTeamFromCell(expertID, iter) == teamID) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+
+
     return {
-        getOptions: getOptions
-    }
+        getIterCount: getIterCount,
+        setIterCount: setIterCount,
+        addTeamToCell: addTeamToCell,
+        getTeamFromCell: getTeamFromCell,
+        isDuplicatedInIter: isDublicatedInIter,
+        clear: clear
+    };
 });
 
 pipePlannerApp.controller("TeamListCtrl", function ($scope, teams) {
@@ -133,7 +169,7 @@ pipePlannerApp.controller("ExpertListCtrl", function ($scope, experts) {
 pipePlannerApp.controller("AbsenceExpertCtrl", function ($rootScope, $scope, experts, absenceExpert, timetable) {
     $scope.title = "Отсутствие экспертов";
     $scope.absenceExpertTable = {};
-    $scope.iterCount = timetable.getOptions().iterCount;
+    $scope.iterCount = timetable.getIterCount();
 
     $scope.getExpertName = function (expertID) {
         return experts.getExpert(expertID).name;
@@ -142,11 +178,11 @@ pipePlannerApp.controller("AbsenceExpertCtrl", function ($rootScope, $scope, exp
     $scope.updateTableFromModel = function () {
         for(var expertID in experts.getExperts()) {
             if($scope.absenceExpertTable[expertID] == undefined ||
-               $scope.absenceExpertTable[expertID].length != timetable.getOptions().iterCount) {
-                $scope.absenceExpertTable[expertID] = new Array(timetable.getOptions().iterCount);
+               $scope.absenceExpertTable[expertID].length != timetable.getIterCount()) {
+                $scope.absenceExpertTable[expertID] = new Array(timetable.getIterCount());
             }
 
-            for(var i = 0; i < timetable.getOptions().iterCount; i++) {
+            for(var i = 0; i < timetable.getIterCount(); i++) {
                 $scope.absenceExpertTable[expertID][i] = (absenceExpert.isAbsenceExpert(expertID, i) ? 1 : 0);
             }
         }
@@ -167,7 +203,7 @@ pipePlannerApp.controller("AbsenceExpertCtrl", function ($rootScope, $scope, exp
 pipePlannerApp.controller("AbsenceTeamCtrl", function ($rootScope, $scope, teams, absenceTeam, timetable) {
     $scope.title = "Отсутствие команд";
     $scope.absenceTeamTable = {};
-    $scope.iterCount = timetable.getOptions().iterCount;
+    $scope.iterCount = timetable.getIterCount();
 
     $scope.getTeamName = function (teamID) {
         return teams.getTeam(teamID).name;
@@ -176,11 +212,11 @@ pipePlannerApp.controller("AbsenceTeamCtrl", function ($rootScope, $scope, teams
     $scope.updateTableFromModel = function () {
         for(var teamID in teams.getTeams()) {
             if($scope.absenceTeamTable[teamID] == undefined ||
-                $scope.absenceTeamTable[teamID].length != timetable.getOptions().iterCount) {
-                $scope.absenceTeamTable[teamID] = new Array(timetable.getOptions().iterCount);
+                $scope.absenceTeamTable[teamID].length != timetable.getIterCount()) {
+                $scope.absenceTeamTable[teamID] = new Array(timetable.getIterCount());
             }
 
-            for(var i = 0; i < timetable.getOptions().iterCount; i++) {
+            for(var i = 0; i < timetable.getIterCount(); i++) {
                 $scope.absenceTeamTable[teamID][i] = (absenceTeam.isAbsenceTeam(teamID, i) ? 1 : 0);
             }
         }
@@ -196,4 +232,75 @@ pipePlannerApp.controller("AbsenceTeamCtrl", function ($rootScope, $scope, teams
     };
 
     $rootScope.$on("teams-updated", $scope.updateTableFromModel);
+});
+
+pipePlannerApp.controller("TimetableCtrl", function ($rootScope, $scope, timetable, experts, teams, absenceTeam, absenceExpert) {
+    $scope.timetableTable = {};
+
+    $scope.updateTableFromModel = function () {
+        for(var expertID in experts.getExperts()) {
+            if($scope.timetableTable[expertID] == undefined ||
+               $scope.timetableTable[expertID].length != timetable.getIterCount()) {
+                $scope.timetableTable[expertID] = new Array(timetable.getIterCount());
+            }
+
+            for(var i = 0; i < timetable.getIterCount(); i++) {
+                $scope.timetableTable[expertID][i] = timetable.getTeamFromCell(expertID, i);
+            }
+        }
+    };
+
+    $scope.autoFillTable = function () {
+        timetable.clear();
+
+        var teamIDs = [];
+        var expertsInTeams = {};
+        for(var teamID in teams.getTeams()) {
+            teamIDs.push(teamID);
+            expertsInTeams[teamID] = [];
+        }
+        if(teamIDs.length == 0) {
+            return;
+        }
+
+        for(var expertID in experts.getExperts()) {
+            for(var iter = 0; iter < timetable.getIterCount(); iter++) {
+                if(absenceExpert.isAbsenceExpert(expertID, iter)) {
+                    continue;
+                }
+
+                var selTeamID = undefined;
+                for(var j = 0; j < teamIDs.length; j++) {
+                    if(!absenceTeam.isAbsenceTeam(teamIDs[j], iter) &&
+                       !timetable.isDuplicatedInIter(iter, teamIDs[j]) &&
+                       expertsInTeams[teamIDs[j]].indexOf(expertID) == -1) {
+                        selTeamID = teamIDs[j];
+                        break;
+                    }
+                }
+
+                if(selTeamID != undefined) {
+                    timetable.addTeamToCell(expertID, iter, selTeamID);
+                    expertsInTeams[selTeamID].push(expertID)
+                }
+            }
+        }
+
+
+
+        $scope.updateTableFromModel();
+    };
+
+    $scope.getExpertName = function (expertID) {
+        if(expertID == undefined) return "";
+        return experts.getExpert(expertID).name;
+    };
+
+    $scope.getTeamName = function (teamID) {
+        if(teamID == undefined) return "";
+        return teams.getTeam(teamID).name;
+    };
+
+    $rootScope.$on("teams-updated", $scope.updateTableFromModel);
+    $rootScope.$on("experts-updated", $scope.updateTableFromModel);
 });
