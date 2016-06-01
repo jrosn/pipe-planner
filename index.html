@@ -15,37 +15,51 @@
     </div>
     <div class="container">
         <div class="row" ng-controller="TimetableCtrl">
-            <table class="table table-bordered table-hover">
-                <tr ng-repeat="(expertID, cells) in timetable">
-                    <td class="col-md-1"><strong>{{ getExpertName(expertID) }}</strong></td>
-                    <td ng-repeat="(i, cell) in cells track by $index" ng-click="cellClick(expertID, i)" class="ng-class: cell.cellType == 1 ? 'danger' : '';"
-                        ng-drop="true"
-                        ng-drop-success="onDropComplete($data, $event, cell)">
-                        <div class="btn btn-default btn-sm" ng-click="deleteTeamFromCell(team, cell)" ng-repeat="team in cell.teams">
-                            {{ team.name }}
-                        </div>
-                    </td>
-                </tr>
-            </table>
-
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="input-group">
-                        <div class="input-group-addon">Количество кругов</div>
-                        <input type="number" class="form-control" ng-model="countIterations">
-                    </div>
-                    <a class="btn btn-primary btn-sm" role="button" ng-click="genZeroTimetable()">Создать пустое расписание</a>
+            <div class="col-md-12">
+                <h2>{{ title }}</h2>
+                <table class="table table-bordered" ng-init="updateTableFromModel()">
+                    <tr ng-repeat="(expertID, cells) in timetableTable">
+                        <!-- Имя эксперта -->
+                        <td class="col-sm-2"><strong>{{ getExpertName(expertID) }}</strong></td>
+                        <!-- Имя команд -->
+                        <td ng-repeat="(iter, teamID) in cells track by $index">
+                            {{ getTeamName(teamID) }}
+                        </td>
+                    </tr>
+                </table>
+                <button type="button" class="btn btn-default" ng-click="autoFillTable()">Generate</button>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon" id="iter-count">Количество кругов</span>
+                    <input type="number" class="form-control small" aria-describedby="iter-count" ng-model="iterCountForm">
                 </div>
+            </div>
+        </div>
+        <div class="row" ng-controller="AbsenceTeamCtrl">
+            <div class="col-md-12">
+                <h2>{{ title }}</h2>
+                <table class="table table-bordered" ng-init="updateTableModel()">
+                    <tr ng-repeat="(teamID, cells) in absenceTeamTable">
+                        <!-- Имя команды -->
+                        <td class="col-sm-2"><strong>{{ getTeamName(teamID) }}</strong></td>
 
-                <!-- Кнопочки для переноса -->
-                <div class="col-md-5">
-                    <div class="btn btn-default btn-sm" ng-repeat="team in teams"
-                         ng-drag="true"
-                         ng-drag-data="team"
-                         ng-center-anchor="true"
-                    >{{ team.name }}</div>
-                </div>
-                <!-- / Кнопочки для переноса -->
+                        <!-- Клеточки для заполнения -->
+                        <td ng-repeat="(iter, cell) in cells track by $index" class="ng-class: cell == 1 ? 'danger' : 'success'" ng-click="onCellClick(teamID, iter)"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="row" ng-controller="AbsenceExpertCtrl">
+            <div class="col-md-12">
+                <h2>{{ title }}</h2>
+                <table class="table table-bordered" ng-init="updateTableModel()">
+                    <tr ng-repeat="(expertID, cells) in absenceExpertTable">
+                        <!-- Имя эксперта -->
+                        <td class="col-sm-2"><strong>{{ getExpertName(expertID) }}</strong></td>
+
+                        <!-- Клеточки для заполнения -->
+                        <td ng-repeat="(iter, cell) in cells track by $index" class="ng-class: cell == 1 ? 'danger' : 'success'" ng-click="onCellClick(expertID, iter)"></td>
+                    </tr>
+                </table>
             </div>
         </div>
         <div class="row">
@@ -91,7 +105,7 @@
                     <div class="col-lg-2"></div>
                 </div>
             </div>
-        </div>
+        </div><!-- Список экспертов, команд -->
     </div>
 </body>
 </html>
