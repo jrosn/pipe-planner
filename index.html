@@ -15,18 +15,24 @@
     </div>
     <div class="container">
         <div class="row" ng-controller="TimetableCtrl">
-            <h2>{{ title }}</h2>
-            <table class="table table-bordered" ng-init="updateTableFromModel()">
-                <tr ng-repeat="(expertID, cells) in timetableTable">
-                    <!-- Имя эксперта -->
-                    <td class="col-sm-2"><strong>{{ getExpertName(expertID) }}</strong></td>
-                    <!-- Имя команд -->
-                    <td ng-repeat="(iter, teamID) in cells track by $index">
-                        {{ getTeamName(teamID) }}
-                    </td>
-                </tr>
-            </table>
-            <button type="button" class="btn btn-default" ng-click="autoFillTable()">Generate</button>
+            <div class="col-md-12">
+                <h2>{{ title }}</h2>
+                <table class="table table-bordered" ng-init="updateTableFromModel()">
+                    <tr ng-repeat="(expertID, cells) in timetableTable">
+                        <!-- Имя эксперта -->
+                        <td class="col-sm-2"><strong>{{ getExpertName(expertID) }}</strong></td>
+                        <!-- Имя команд -->
+                        <td ng-repeat="(iter, teamID) in cells track by $index">
+                            {{ getTeamName(teamID) }}
+                        </td>
+                    </tr>
+                </table>
+                <button type="button" class="btn btn-default" ng-click="autoFillTable()">Generate</button>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon" id="iter-count">Количество кругов</span>
+                    <input type="number" class="form-control small" aria-describedby="iter-count" ng-model="iterCountForm">
+                </div>
+            </div>
         </div>
         <div class="row" ng-controller="AbsenceTeamCtrl">
             <div class="col-md-12">

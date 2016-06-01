@@ -105,13 +105,14 @@ pipePlannerApp.factory('absenceExpert', function () {
     };
 });
 
-pipePlannerApp.factory('timetable', function (experts) {
+pipePlannerApp.factory('timetable', function ($rootScope, experts) {
     var iterCount = 10;
     var getIterCount = function () {
         return iterCount;
     };
     var setIterCount = function (newVal) {
         iterCount = newVal;
+        $rootScope.$broadcast("timetable-itercount-updated");
     };
 
     var timetable = {};
@@ -141,8 +142,6 @@ pipePlannerApp.factory('timetable', function (experts) {
         }
         return false;
     };
-
-
 
     return {
         getIterCount: getIterCount,
@@ -198,6 +197,7 @@ pipePlannerApp.controller("AbsenceExpertCtrl", function ($rootScope, $scope, exp
     };
 
     $rootScope.$on("experts-updated", $scope.updateTableFromModel);
+    $rootScope.$on("timetable-itercount-updated", $scope.updateTableFromModel);
 });
 
 pipePlannerApp.controller("AbsenceTeamCtrl", function ($rootScope, $scope, teams, absenceTeam, timetable) {
@@ -232,6 +232,7 @@ pipePlannerApp.controller("AbsenceTeamCtrl", function ($rootScope, $scope, teams
     };
 
     $rootScope.$on("teams-updated", $scope.updateTableFromModel);
+    $rootScope.$on("timetable-itercount-updated", $scope.updateTableFromModel);
 });
 
 pipePlannerApp.controller("TimetableCtrl", function ($rootScope, $scope, timetable, experts, teams, absenceTeam, absenceExpert) {
@@ -270,11 +271,12 @@ pipePlannerApp.controller("TimetableCtrl", function ($rootScope, $scope, timetab
                 }
 
                 var selTeamID = undefined;
-                for(var j = 0; j < teamIDs.length; j++) {
-                    if(!absenceTeam.isAbsenceTeam(teamIDs[j], iter) &&
-                       !timetable.isDuplicatedInIter(iter, teamIDs[j]) &&
-                       expertsInTeams[teamIDs[j]].indexOf(expertID) == -1) {
-                        selTeamID = teamIDs[j];
+                for(var j = 0; j < 3 * teamIDs.length; j++) {
+                    var jNormalized = j % teamIDs.length;
+                    if(!absenceTeam.isAbsenceTeam(teamIDs[jNormalized], iter) &&
+                       !timetable.isDuplicatedInIter(iter, teamIDs[jNormalized]) &&
+                       expertsInTeams[teamIDs[jNormalized]].indexOf(expertID) == -1) {
+                        selTeamID = teamIDs[jNormalized];
                         break;
                     }
                 }
@@ -285,8 +287,6 @@ pipePlannerApp.controller("TimetableCtrl", function ($rootScope, $scope, timetab
                 }
             }
         }
-
-
 
         $scope.updateTableFromModel();
     };
@@ -301,6 +301,10 @@ pipePlannerApp.controller("TimetableCtrl", function ($rootScope, $scope, timetab
         return teams.getTeam(teamID).name;
     };
 
+    $scope.setIterCount = timetable.setIterCount;
+
     $rootScope.$on("teams-updated", $scope.updateTableFromModel);
     $rootScope.$on("experts-updated", $scope.updateTableFromModel);
+    $rootScope.$on("timetable-itercount-updated", $scope.updateTableFromModel);
+    $scope.$watch("iterCountForm", timetable.setIterCount);
 });
